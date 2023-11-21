@@ -1,114 +1,56 @@
-import os
+import random
 
-os.system("")
-
-class Character:
-    def __init__(self,name,health,weapon):
-        self.name = name
-        self.health = health
-        self.health_max = health
-        self.weapon = weapon
-
-        
-    def Attack(self,target):
-        target.health -= self.weapon.damage
-        target.health = max(target.health, 0)
-        target.health_bar.update()
-        print(f'{self.name} dealt {self.weapon.damage} damage to {target.name}')
-        
-class Weapons:
-    def __init__(self,name,weapon_type,damage,value):
-        self.name = name
-        self.weapon_type = weapon_type
-        self.damage = damage
-        self.value = value
-        
-        
-class Hero(Character):
-    def __init__(self, name: str, health: int, weapon):
-        super().__init__(name = name, health = health, weapon= weapon)
-        
-        self.default_weapon = self.weapon
-        self.health_bar = HealthBar(self, color= 'green')
-        
-    def equip(self, weapon):
-        self.weapon = weapon
-        print(f'{self.name} equipped a (n) {self.weapon.name}')
-        
-    def drop(self):
-        self.weapon = self.default_weapon
-        print(f'{self.name} has dropped the {self.weapon.name}!')
-        
-class Enemy(Character):
-    def __init__(self, name: str, health: int,weapon):
-        super().__init__(name = name, health = health, weapon= weapon)
-        self.weapon = weapon
-        self.health_bar = HealthBar(self, color= 'red')
-        
-class HealthBar:
-    symbol_remaining: str = "█"
-    symbol_lost: str = "_"
-    barrier: str = "|"
-    colors: dict = {"red": "\033[91m",
-                    "purple": "\33[95m",
-                    "blue": "\33[34m",
-                    "blue2": "\33[36m",
-                    "blue3": "\33[96m",
-                    "green": "\033[92m",
-                    "green2": "\033[32m",
-                    "brown": "\33[33m",
-                    "yellow": "\33[93m",
-                    "grey": "\33[37m",
-                    "default": "\033[0m"
-                    }
-    def __init__(self,entity,length: int = 20,is_colored = True,color = ''):
-        self.length = length
-        self.entity = entity
-        self.max_value = entity.health_max
-        self.currewnt_value = entity.health
-
-        self.is_colored = is_colored
-        self.color = self.colors.get(color) or self.colors['default']
-        
-    def update(self) -> None:
-        self.current_value = self.entity.health
-        
-    def draw(self) -> None:
-        remaining_bars = round(self.current_value / self.max_value * self.length)
-        lost_bars = self.length - remaining_bars
-        print(f"{self.entity.name}'s HEALTH: {self.entity.health}/{self.entity.health_max}")
-        print(f"{self.barrier}"
-              f"{self.color if self.is_colored else ''}"
-              f"{remaining_bars * self.symbol_remaining}"
-              f"{lost_bars * self.symbol_lost}"
-              f"{self.colors['default'] if self.is_colored else ''}"
-              f"{self.barrier}")
-
-
-#Objects weapons
-
-iron_sword = Weapons(name = 'Iron Sword', weapon_type= 'sharp',damage= 5,value= 10)
-short_bow = Weapons(name= 'shor bow', weapon_type= 'ranged', damage= 4, value= 8)
-fists = Weapons(name= 'fist',weapon_type= 'blunt', damage= 2, value= 0)
-# Objects Characters        
-hero = Hero('Hero',100, fists)
-enemy = Enemy('Enemy',100,short_bow)
-
-while True:
+class GameBoard:
+    def __init__(self,board):
+        self.board = board
+    # Create a dictionary for user input 
+    def get_letters_to_numbers():
+        letters_to_numners = {'A':0,'B':1,'C':2,'D':3,'E':4,'F':5,'G':6,'H':7}
+        return letters_to_numners
+    # Print the board
+    def print_board(self):
+        print(' A B C D E F G H')
+        print(' +-+-+-+-+-+-+-+')
+        row_number = 1
+        for row in self.board:
+            print('%d|%s' % (row_number, '|'.join(row)))
+            row_number += 1
+            
+class battleship:
     
-    os.system('cls')
+    #select a game board
+    def __init__(self,board):
+        self.board = board
+        
+    #Create ships by replacing '-' to 'X'
+    def create_ships(self):
+        for i in range(5):
+            self.x_row,self.y_colum = random.randint(0,7),random.randint(0,7)
+            # if the colum or the row has already a 'X' randomize again til find an empty space, then place a 'X'
+            while self.board[self.x_row][self.y_colum] == 'X':
+                self.x_row,self.y_colum = random.randint(0,7),random.randint(0,7)
+            self.board[self.x_row][self.y_colum] = 'X'
+        return self.board
     
+    def get_user_input(self):
+        try:
+            x_row = input('Enter the row of the ship: ')
+            while x_row not in '12345678':
+                print('Not an appropiate choice, please select a valid row')
+                x_row = input('Enter the row of the ship: ')
+                
+            y_column = input('Enter the column letter of the ship: ').upper()
+            while y_column not in 'ABCDEFGH':
+                print('Not an appropiate choice, please select a valid row')
+            return int(x_row) -1, GameBoard.get_letters_to_numbers()[y_column]
+        except ValueError and KeyError:
+            print('Not valid input')
+            return self.get_user_input
     
-    hero.equip(iron_sword)
-    hero.drop()
-
-    hero.equip(iron_sword)
-    hero.Attack(enemy)
-    enemy.Attack(hero)
-
-    hero.health_bar.draw()
-    enemy.health_bar.draw()
-    
-    input()
-
-    
+    def count_hit_ships(self):
+        hit_ships = 0
+        for column in hit_ships:
+            for row in column:
+                if row == 'X':
+                    hit_ships += 1
+        return hit_ships
